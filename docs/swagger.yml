@@ -1,0 +1,1222 @@
+openapi: '3.0.2'
+info:
+  title: RecyThing
+  version: '1.0'
+  description: "API Documentation Capstone Project RecyThing Kelompok 2"
+servers:
+  - url: https://localhost:8080/v1/api
+tags:
+  - name: authentication
+    description: Endpoint for user register/login
+  - name: user
+    description: Endpoint for user account
+  - name: reporting
+    description: Endpoint for user reporting littering & rubbish
+  - name: chatbot AI
+    description: Endpoint for user chatbot (coming soon)
+  - name: virtual assistant AI
+    description: Endpoint for user virtual assistant (coming soon)
+
+  - name: manage users
+    description: Endpoint for admin manage users account
+  - name: manage reports
+    description: Endpoint for admin manage reports
+  - name: manage articles
+    description: Endpoint for admin manage articles
+  - name: manage achievements
+    description: Endpoint for admin manage achievements
+  - name: manage admins
+    description: Endpoint for super admin manage admins
+
+paths:
+  /register:
+    post:
+      tags:
+        - authentication
+      summary: Register a new user
+      description: Register new account
+      operationId: registerUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegister'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRegister'
+        required: true
+      responses:
+        '201':
+          description: Register Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: user successfully register! OTP sent to your email
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: U00001
+                      email:
+                        type: string
+                        example: john.doe@gmail.com
+        '400':
+          description: Register Failed (validation error / email already exists)
+  
+  /verify-otp:
+    post:
+      tags:
+        - authentication
+      summary: Verify OTP
+      description: Verify the OTP sent to the user email after registration.
+      operationId: verifyOtp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  description: The ID of the user
+                  example: U00001
+                otp:
+                  type: string
+                  description: The OTP sent to the user's email
+                  example: 678901
+      responses:
+        '200':
+          description: OTP successfully verified, user registration complete
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: OTP successfully verified. Registration complete!
+        '400':
+          description: Invalid OTP or user ID
+  /login:
+    post:
+      tags:
+        - authentication
+      summary: Login User
+      description: Login account
+      operationId: loginUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+        required: true
+      responses:
+        '200':
+          description: Login Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: login successfully!
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 737623d5-228b-4bb7-8224-bd2dec529e53
+                      email:
+                        type: string
+                        example: john.doe@gmail.com
+                      phone_number:
+                        type: string
+                        example: 089511223344
+        '400':
+          description: Login Failed (invalid email / password)
+
+  /user/profile:
+    put:
+      tags:
+        - user
+      summary: Edit user profile information
+      description: Edit user profile information
+      operationId: editUserProfile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      responses:
+        '200':
+          description: Update Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: user updated!
+        '400':
+          description: Update Failed (validation error dll)
+      security:
+        - Bearer: []
+
+  /user/uploadAvatar:
+    post:
+      tags:
+        - user
+      summary: Upload Avatar User
+      description: Upload Avatar On User Profile
+      operationId: uploadAvatarUser
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+              properties:
+                imageProfile:
+                  type: string
+                  format: image
+                  description: Image avatar anda
+        required: true
+      responses:
+        '200':
+          description: Upload Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: upload successfully!
+                  data:
+                    type: object
+                    properties:
+                      avatar_url:
+                        type: string
+                        example: http://example.com/yourimage.png
+        '400':
+          description: Upload Failed (filetype error, filesize to large error, dll)
+      security:
+        - Bearer: []
+
+  /report:
+    post:
+      tags:
+        - reporting
+      summary: Create a new report for rubbish or littering
+      description: Endpoint for Report rubbish or Report Littering
+      operationId: createReport
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Report'
+        required: true
+      responses:
+        '201':
+          description: Upload Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: report created!
+                  data:
+                    type: object
+                    properties:
+                      avatar_url:
+                        type: string
+                        example: http://example.com/yourimage.png
+        '400':
+          description: Upload Failed (filetype error, filesize to large error, dll)
+      security:
+        - Bearer: []
+
+  /admin/users:
+    get:
+      tags:
+        - manage users
+      summary: View all users
+      description: Endpoint admin to view all users with pagination.
+      operationId: viewAllUsers
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+          example: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of users per page
+          example: 10
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: Get all users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message: 
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        example: 100
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      users:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: U00001
+                            name:
+                              type: string
+                              example: "John Doe"
+                            email:
+                              type: string
+                              example: "john.doe@gmail.com"
+                            phone_number:
+                              type: string
+                              example: 089511223344
+                            points:
+                              type: integer
+                              example: 100
+                            gender:
+                              type: string
+                              example: male
+                            birth_date:
+                              type: string
+                              format: date
+                              example: 1990-01-01
+                            address:
+                              type: string
+                              example: 123 Main Street, City, Country
+                            profile_picture:
+                              type: string
+                              example: http://example.com/yourimage.png
+        '400':
+          description: Invalid param request
+
+  /admin/users/{userId}:
+    delete:
+      tags:
+        - manage users
+      summary: Delete user
+      description: Endpoint admin to delete a user
+      operationId: deleteUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the user to be deleted
+          example: U00001
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: User successfully deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: 
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: user successfully deleted!
+        '404':
+          description: User not found
+
+  /admin/reports:
+    get:
+      tags:
+        - manage reports
+      summary: View all reports
+      description: Endpoint admin to view all reports with filters and pagination
+      operationId: viewAllReports
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Filter by report category
+            example: rubbish
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [need review, approve, reject]
+            description: Filter by report status
+            example: need review
+        - name: date
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            description: Filter by date
+            example: "2024-01-01"
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+          example: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of reports per page
+          example: 10
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: Get all reports
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message: 
+                    type: string
+                    example: OK
+                  data:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        example: 50
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      reports:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: "67890"
+                            report_type:
+                              type: string
+                              example: "rubbish"
+                            title:
+                              type: string
+                              example: "Litter in the park"
+                            description:
+                              type: string
+                              example: "There is litter scattered around the central park."
+                            images:
+                              type: array
+                              items:
+                                type: string
+                                example: "image1.jpg"
+                            waste_type:
+                              type: string
+                              example: "inorganic"
+                            waste_materials:
+                              type: array
+                              items:
+                                type: string
+                                example: "plastic, paper"
+                            lat:
+                              type: number
+                              format: float
+                              example: -6.200000
+                            long:
+                              type: number
+                              format: float
+                              example: 106.816666
+                            location:
+                              type: string
+                              example: "Central Park, Jakarta"
+                            address:
+                              type: string
+                              example: "Jl. Medan Merdeka Selatan, Jakarta"
+                            status:
+                              type: string
+                              example: "need review"
+                            createdDate:
+                              type: string
+                              format: date
+                              example: "2024-04-01"
+        '400':
+          description: Invalid request parameters
+  /admin/reports/{reportId}/verify:
+    put:
+      tags:
+        - manage reports
+      summary: Verify report
+      description: Endpoint admin to verify a report (approve or reject)
+      operationId: verifyReport
+      parameters:
+        - name: reportId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the report to be verified
+          example: RPT0001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [approve, reject]
+                  description: New status for the report
+                  example: approve
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: Report status successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: report status successfully updated!
+        '400':
+          description: Invalid request data
+        '404':  
+          description: Report not found
+
+  /admin/articles:
+    get:
+      tags:
+        - manage articles
+      summary: Get all articles
+      description: Endpoint admin to get all articles with pagination.
+      operationId: viewAllArticles
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+          example: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of articles per page
+          example: 10
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: Successfully get articles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        example: 50
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      articles:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Article'
+        '400':
+          description: Invalid request parameters
+    post:
+      tags:
+        - manage articles
+      summary: Add new article
+      description: Endpoint admin to add a new article
+      operationId: addArticle
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Article'
+      security:
+        - Bearer: []
+      responses:
+        '201':
+          description: Article successfully created!
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: article successfully created!
+        '400':
+          description: Invalid request data
+  /admin/articles/{articleId}:
+    put:
+      tags:
+        - manage articles
+      summary: Edit article
+      description: Endpoint admin to edit an existing article.
+      operationId: editArticle
+      parameters:
+        - name: articleId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the article to be edited
+          example: ART0001
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Article'
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: Article successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: article successfully updated!
+        '404':
+          description: Article not found
+        '400':
+          description: Invalid request data 
+    delete:
+      tags:
+        - manage articles
+      summary: Delete article
+      description: Endpoint admin to delete an article.
+      operationId: deleteArticle
+      parameters:
+        - name: articleId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the article to be deleted
+          example: ART0001
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: Article successfully deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: article successfully deleted!
+        '404':
+          description: Article not found
+  /admin/achievements:
+    get:
+      tags:
+        - manage achievements
+      summary: Get all achievements
+      description: Endpoint admin to get all achievements/badges.
+      operationId: viewAllAchievements
+      responses:
+        '200':
+          description: Successfully retrieved achievements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: ok
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Achievement'
+      security:
+        - Bearer: []                      
+    post:
+      tags:
+        - manage achievements
+      summary: Add new achievement
+      description: Endpoint admin to add a new achievement/badge.
+      operationId: addAchievement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  enum: [classic, silver, gold, platinum]
+                  description: Name of the badge
+                  example: gold
+                targetPoint:
+                  type: integer
+                  description: Target point for the badge
+                  example: 1000
+      security:
+        - Bearer: []                  
+      responses:
+        '201':
+          description: Achievement successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: achievement successfully created!
+        '400':
+          description: Invalid request data
+  /admin/achievements/{achievementId}:
+    put:
+      tags:
+        - manage achievements
+      summary: Update target point of an achievement
+      description: Endpoint admin to update the target point of an existing achievement/badge.
+      operationId: updateAchievement
+      parameters:
+        - name: achievementId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the badge to be updated
+          example: ACH0001
+      security:
+        - Bearer: []          
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                target_point:
+                  type: integer
+                  description: New target point for the badge
+                  example: 1200
+      responses:
+        '200':
+          description: Achievement successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: aAchievement successfully updated!
+        '404': 
+          description: Achievement not found
+        '400':
+          description: Invalid request data
+    delete:
+      tags:
+        - manage achievements
+      summary: Delete an achievement
+      description: Endpoint admin to delete an achievement/badge.
+      operationId: deleteAchievement
+      parameters:
+        - name: achievementId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the badge to be updated
+          example: ACH0001
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: Achievement successfully deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: achievement successfully deleted!
+        '404': 
+          description: Achievement not found
+
+  /superadmin/admins:
+    get:
+      tags:
+        - manage admins
+      summary: Get all admins
+      description: Endpoint super admin to get all admins data
+      operationId: viewAllAdmins
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+          example: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of admins per page
+          example: 10
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: Successfully get admins
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: ok
+                  data:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        example: 20
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      admins:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/AdminResponse'
+    post:
+      tags:
+        - manage admins
+      summary: Add new admin
+      description: Endpoint super admin to add a new admin.
+      operationId: addAdmin
+      security:
+        - Bearer: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Admin'
+      responses:
+        '201':
+          description: Admin successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: admin successfully created!
+        '400':
+          description: Invalid request data
+  /superadmin/admins/{adminId}:
+    put:
+      tags:
+        - manage admins
+      summary: Update admin
+      description: Endpoint for super admin to update an existing admin's data.
+      operationId: updateAdmin
+      security:
+        - Bearer: []
+      parameters:
+        - name: adminId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the admin to be updated
+          example: ADM0001
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Admin'
+      responses:
+        '200':
+          description: Admin successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: admin successfully updated!
+        '400':
+          description: Invalid request data
+        '404':
+          description: Admin not found
+    delete:
+      tags:
+        - manage admins
+      summary: Delete an admin
+      description: Endpoint super admin to delete an admin.
+      operationId: deleteAdmin
+      security:
+        - Bearer: []
+      parameters:
+        - name: adminId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the admin to be deleted
+          example: ADM0001
+      responses:
+        '200':
+          description: Admin successfully deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: admin successfully deleted!
+        '404':
+          description: Admin not found
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        name:
+          type: string
+          example: John Doe
+        email:
+          type: string
+          example: john.doe@gmail.com
+        phone_number:
+          type: string
+          example: 089511223344
+        address:
+          type: string
+          example: Jalan Soedirman
+        gender:
+          type: string
+          enum: [male, female]
+          example: male
+        birthDate:
+          type: string
+          format: date
+          example: "1990-01-01"
+        profile_picture:
+          type: string
+          example: "http://website.com/image.png"
+    UserRegister:
+      type: object
+      properties:
+        name:
+          type: string
+          example: John Doe
+        email:
+          type: string
+          example: john.doe@gmail.com
+        phone_number:
+          type: string
+          example: 089511223344
+        password:
+          type: string
+          example: password@123
+    UserLogin:
+      type: object
+      properties:
+        email:
+          type: string
+          example: john.doe@gmail.com
+        password:
+          type: string
+          example: password@123
+    Report:
+      type: object
+      properties:
+        reportType:
+          type: string
+          enum: [rubbish, littering]
+          description: Type of the report
+          example: rubbish
+        title:
+          type: string
+          description: Title of the report
+          example: "Rubbish in the park"
+        description:
+          type: string
+          description: Description of the report
+          example: "There is a lot of rubbish in the central park near the playground."
+        images:
+          type: array
+          items:
+            type: string
+            format: binary
+          description: Multiple images for the report
+          example: ["image1.jpg", "image2.jpg"]
+        wasteType:
+          type: string
+          enum: [organic, inorganic, hazardous]
+          description: Type of waste
+          example: inorganic
+        wasteMaterials:
+          type: array
+          items:
+            type: string
+            enum: [plastic, glass, wood, paper, battery, metal, toxicWaste, hazardousWaste]
+          description: Multiple choice for types of waste materials
+          example: ["plastic", "paper", "battery"]
+        lat:
+          type: number
+          format: float
+          description: Latitude of the location
+          example: -6.200000
+        long:
+          type: number
+          format: float
+          description: Longitude of the location
+          example: 106.816666
+        location:
+          type: string
+          description: General location description
+          example: "Central Park, Jakarta"
+        address:
+          type: string
+          description: Address of the location
+          example: "Jl. Medan Merdeka Selatan, Jakarta"
+        status:
+          type: string
+          enum: [need review, approve, reject]
+          default: need review
+          description: Status of the report
+          example: need review
+    Article:
+      type: object
+      properties:
+        id:
+          type: string
+          example: ART0001
+        title:
+          type: string
+          example: "The Benefits of Recycling"
+        description:
+          type: string
+          example: "Recycling has numerous benefits for the environment."
+        category:
+          type: array
+          items:
+            type: string
+            enum: [organic, plastic, paper, glass, textile, can, electronic, others]
+            example: "plastic"
+        thumbnail:
+          type: string
+          example: "thumbnail.jpg"
+    Achievement:
+      type: object
+      properties:
+        name:
+          type: string
+          enum: [classic, silver, gold, platinum]
+          example: gold
+        target_point:
+          type: integer
+          example: 500
+    Admin:
+      type: object
+      properties:
+        id:
+          type: string
+          example: ADM0001
+        name:
+          type: string
+          example: John Doe
+        email:
+          type: string
+          example: john.doe@example.com
+        password:
+          type: string
+          example: password@123
+        role:
+          type: string
+          enum: [admin, superadmin]
+          example: admin
+        profile_photo:
+          type: string
+          format: image
+          example: "profile.jpg"
+    AdminResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: ADM0001
+        name:
+          type: string
+          example: John Doe
+        email:
+          type: string
+          example: john.doe@example.com
+        role:
+          type: string
+          enum: [admin, superadmin]
+          example: admin
+        profile_photo:
+          type: string
+          example: "https://example.com/profile.jpg"
